@@ -233,7 +233,7 @@ void MorphologyHDF5::_readPoints(int firstSectionOffset) {
         for (std::size_t i = 0; i < section_offset; ++i) {
             const auto& p = hd5fData[i];
             somaPoints[i] = {static_cast<float>(p[0]), static_cast<float>(p[1]), static_cast<float>(p[2])};
-            somaDiameters[i] = p[3];
+            somaDiameters[i] = static_cast<float>(p[3]);
         }
 
         if (hasNeurites) {
@@ -244,7 +244,7 @@ void MorphologyHDF5::_readPoints(int firstSectionOffset) {
                 const auto& p = hd5fData[i];
                 const std::size_t section_i = i - section_offset;
                 points[section_i] = {static_cast<float>(p[0]), static_cast<float>(p[1]), static_cast<float>(p[2])};
-                diameters[section_i] = p[3];
+                diameters[section_i] = static_cast<float>(p[3]);
             }
         }
     };
