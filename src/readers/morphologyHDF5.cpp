@@ -223,7 +223,7 @@ void MorphologyHDF5::_readPoints(int firstSectionOffset) {
     auto& somaPoints = _properties._somaLevel._points;
     auto& somaDiameters = _properties._somaLevel._diameters;
 
-    auto loadPoints = [&](const std::vector<std::vector<float>>& hd5fData, bool hasNeurites) {
+    auto loadPoints = [&](const std::vector<std::vector<double>>& hd5fData, bool hasNeurites) {
         const std::size_t section_offset = hasNeurites ? std::size_t(firstSectionOffset)
                                                        : hd5fData.size();
 
@@ -232,7 +232,7 @@ void MorphologyHDF5::_readPoints(int firstSectionOffset) {
         somaDiameters.resize(somaDiameters.size() + section_offset);
         for (std::size_t i = 0; i < section_offset; ++i) {
             const auto& p = hd5fData[i];
-            somaPoints[i] = {p[0], p[1], p[2]};
+            somaPoints[i] = {static_cast<float>(p[0]), static_cast<float>(p[1]), static_cast<float>(p[2])};
             somaDiameters[i] = p[3];
         }
 
@@ -243,7 +243,7 @@ void MorphologyHDF5::_readPoints(int firstSectionOffset) {
             for (std::size_t i = section_offset; i < hd5fData.size(); ++i) {
                 const auto& p = hd5fData[i];
                 const std::size_t section_i = i - section_offset;
-                points[section_i] = {p[0], p[1], p[2]};
+                points[section_i] = {static_cast<float>(p[0]), static_cast<float>(p[1]), static_cast<float>(p[2])};
                 diameters[section_i] = p[3];
             }
         }
@@ -265,11 +265,11 @@ void MorphologyHDF5::_readPoints(int firstSectionOffset) {
             throw(MorphioError("'Error reading morphologies: " + _uri +
                                " bad number of dimensions in 'points' dataspace"));
         }
-        std::vector<std::vector<float>> vec(dims[0]);
+        std::vector<std::vector<double>> vec(dims[0]);
         dataset.read(vec);
         loadPoints(vec, v2HasNeurites(firstSectionOffset));
     } else {
-        std::vector<std::vector<float>> vec(_pointsDims[0]);
+        std::vector<std::vector<double>> vec(_pointsDims[0]);
         _points->read(vec);
         loadPoints(vec, std::size_t(firstSectionOffset) < _pointsDims[0]);
     }
