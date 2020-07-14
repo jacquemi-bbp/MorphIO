@@ -266,11 +266,11 @@ void MorphologyHDF5::_readPoints(int firstSectionOffset) {
                                " bad number of dimensions in 'points' dataspace"));
         }
         std::vector<std::vector<double>> vec(dims[0]);
-        dataset.read(vec);
+        dataset.select({0, 0}, dims).read(vec);
         loadPoints(vec, v2HasNeurites(firstSectionOffset));
     } else {
         std::vector<std::vector<double>> vec(_pointsDims[0]);
-        _points->read(vec);
+        _points->select({0, 0}, _pointsDims).read(vec);
         loadPoints(vec, std::size_t(firstSectionOffset) < _pointsDims[0]);
     }
 }
