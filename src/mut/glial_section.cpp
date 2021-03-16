@@ -1,13 +1,22 @@
 #include <stack>
 
 #include <morphio/errorMessages.h>
-#include <morphio/mut/glialCell.h>
+#include <morphio/mut/glial_cell.h>
 #include <morphio/mut/glial_section.h>
 #include <morphio/tools.h>
 
+
+
 namespace morphio {
+
+extern template class Node<CellFamily::GLIA>;
+
 namespace mut {
 using morphio::readers::ErrorMessages;
+
+using glial_depth_iterator = depth_iterator_t<std::shared_ptr<GlialSection>>;
+using glial_breadth_iterator = breadth_iterator_t<std::shared_ptr<GlialSection>>;
+using glial_upstream_iterator = upstream_iterator_t<std::shared_ptr<GlialSection>>;
 
 static inline bool _emptySection(const std::shared_ptr<GlialSection>& section) {
     return section->points().empty();
@@ -15,7 +24,7 @@ static inline bool _emptySection(const std::shared_ptr<GlialSection>& section) {
 
 GlialSection::GlialSection(GlialCell* glialCell,
                  unsigned int id_,
-                 SectionType type_,
+                 GlialSectionType type_,
                  const Property::PointLevel& pointProperties)
     : _morphology(glialCell)
     , _pointProperties(pointProperties)
@@ -56,27 +65,27 @@ const std::vector<std::shared_ptr<GlialSection>>& GlialSection::children() const
 }
 
 glial_depth_iterator GlialSection::depth_begin() const {
-    return depth_iterator(const_cast<GlialSection*>(this)->shared_from_this());
+    return glial_depth_iterator(const_cast<GlialSection*>(this)->shared_from_this());
 }
 
 glial_depth_iterator GlialSection::depth_end() const {
-    return depth_iterator();
+    return glial_depth_iterator();
 }
 
 glial_breadth_iterator GlialSection::breadth_begin() const {
-    return breadth_iterator(const_cast<GlialSection*>(this)->shared_from_this());
+    return glial_breadth_iterator(const_cast<GlialSection*>(this)->shared_from_this());
 }
 
 glial_breadth_iterator GlialSection::breadth_end() const {
-    return breadth_iterator();
+    return glial_breadth_iterator();
 }
 
 glial_upstream_iterator GlialSection::upstream_begin() const {
-    return upstream_iterator(const_cast<GlialSection*>(this)->shared_from_this());
+    return glial_upstream_iterator(const_cast<GlialSection*>(this)->shared_from_this());
 }
 
 glial_upstream_iterator GlialSection::upstream_end() const {
-    return upstream_iterator();
+    return glial_upstream_iterator();
 }
 
 static std::ostream& operator<<(std::ostream& os, const GlialSection& section) {
@@ -151,14 +160,14 @@ std::shared_ptr<GlialSection> GlialSection::appendSection(const morphio::GlialSe
 }
 
 std::shared_ptr<GlialSection> GlialSection::appendSection(const Property::PointLevel& pointProperties,
-                                                SectionType sectionType) {
+                                                GlialSectionType sectionType) {
     unsigned int parentId = id();
 
     auto& _sections = _morphology->_sections;
-    if (sectionType == SectionType::SECTION_UNDEFINED)
+    if (sectionType == GlialSectionType::UNDEFINED)
         sectionType = type();
 
-    if (sectionType == SECTION_SOMA)
+    if (sectionType == GlialSectionType::SOMA)
         throw morphio::SectionBuilderError("Cannot create section with type soma");
 
     std::shared_ptr<GlialSection> ptr(

@@ -18,7 +18,7 @@ namespace morphio {
 
 namespace mut {
 
-void _appendProperties(Property::PointLevel& to, const Property::PointLevel& from, int offset);
+extern void _appendProperties(Property::PointLevel& to, const Property::PointLevel& from, int offset=0);
 
 using morphio::readers::ErrorMessages;
 GlialCell::GlialCell(const std::string& uri, unsigned int options)
@@ -48,7 +48,7 @@ GlialCell::GlialCell(const morphio::GlialCell& morphology, unsigned int options)
     _cellProperties = std::make_shared<morphio::Property::CellLevel>(
         morphology._properties->_cellLevel);
 
-    for (const morphio::Section<CellFamily::GLIA>& root : morphology.rootSections()) {
+    for (const auto& root : morphology.rootSections()) {
         appendRootSection(root, true);
     }
 
@@ -88,7 +88,7 @@ bool _checkDuplicatePoint(const std::shared_ptr<GlialSection>& parent,
     return true;
 }
 
-std::shared_ptr<GlialSection> GlialCell::appendRootSection(const morphio::Section<CellFamily::GLIA>& section_,
+std::shared_ptr<GlialSection> GlialCell::appendRootSection(const morphio::GlialSection& section_,
                                                        bool recursive) {
     const std::shared_ptr<GlialSection> ptr(new GlialSection(this, _counter, section_));
     _register(ptr);
@@ -195,14 +195,6 @@ void GlialCell::deleteSection(const std::shared_ptr<GlialSection>& section_, boo
 }
 
 
-void _appendProperties(Property::PointLevel& to, const Property::PointLevel& from, int offset = 0) {
-    _appendVector(to._points, from._points, offset);
-    _appendVector(to._diameters, from._diameters, offset);
-
-    if (!from._perimeters.empty())
-        _appendVector(to._perimeters, from._perimeters, offset);
-}
-
 void GlialCell::sanitize() {
     sanitize(morphio::readers::DebugInfo());
 }
@@ -210,8 +202,8 @@ void GlialCell::sanitize() {
 void GlialCell::sanitize(const morphio::readers::DebugInfo& debugInfo) {
     morphio::readers::ErrorMessages err(debugInfo._filename);
 
-    glial_depth_iterator it = glial_depth_begin();
-    while (it != glial_depth_end()) {
+    glial_depth_iterator it = depth_begin();
+    while (it != depth_end()) {
         std::shared_ptr<GlialSection> section_ = *it;
 
 
@@ -268,14 +260,14 @@ Property::Properties GlialCell::buildReadOnly() const {
     properties._cellLevel._somaType = _soma->type();
     _appendProperties(properties._somaLevel, _soma->_pointProperties);
 
-    for (auto it = glial_depth_begin(); it != glial_depth_end(); ++it) {
+    for (auto it = depth_begin(); it != depth_end(); ++it) {
         const std::shared_ptr<GlialSection>& section_ = *it;
         unsigned int sectionId = section_->id();
         int parentOnDisk = (section_->isRoot() ? -1 : newIds[section_->parent()->id()]);
 
         auto start = static_cast<int>(properties._pointLevel._points.size());
         properties._sectionLevel._sections.push_back({start, parentOnDisk});
-        properties._sectionLevel._sectionTypes.push_back(section_->type());
+        properties._sectionLevel._sectionTypes.push_back(static_cast<uint32_t>(section_->type()));
         newIds[sectionId] = sectionIdOnDisk++;
         _appendProperties(properties._pointLevel, section_->_pointProperties);
     }
@@ -285,38 +277,24 @@ Property::Properties GlialCell::buildReadOnly() const {
     return properties;
 }
 
-glial_depth_iterator GlialCell::glial_depth_begin() const {
-    return glial_depth_iterator(*this);
+glial_depth_iterator GlialCell::depth_begin() const {
+    return glial_depth_iterator(rootSections());
 }
 
-glial_depth_iterator GlialCell::glial_depth_end() const {
+glial_depth_iterator GlialCell::depth_end() const {
     return glial_depth_iterator();
 }
 
-glial_breadth_iterator GlialCell::glial_breadth_begin() const {
-    return glial_breadth_iterator(*this);
+glial_breadth_iterator GlialCell::breadth_begin() const {
+    return glial_breadth_iterator(rootSections());
 }
 
-glial_breadth_iterator GlialCell::glial_breadth_end() const {
+glial_breadth_iterator GlialCell::breadth_end() const {
     return glial_breadth_iterator();
 }
 
 void GlialCell::applyModifiers(unsigned int modifierFlags) {
-    if (modifierFlags & NO_DUPLICATES & TWO_POINTS_SECTIONS)
-        throw SectionBuilderError(
-            _err.ERROR_UNCOMPATIBLE_FLAGS(NO_DUPLICATES, TWO_POINTS_SECTIONS));
-
-    if (modifierFlags & SOMA_SPHERE)
-        modifiers::soma_sphere(*this);
-
-    if (modifierFlags & NO_DUPLICATES)
-        modifiers::no_duplicate_point(*this);
-
-    if (modifierFlags & TWO_POINTS_SECTIONS)
-        modifiers::two_points_sections(*this);
-
-    if (modifierFlags & NRN_ORDER)
-        modifiers::nrn_order(*this);
+    modifierFlags *= 2;
 }
 
 std::unordered_map<int, std::vector<unsigned int>> GlialCell::connectivity() {
@@ -360,11 +338,7 @@ void GlialCell::write(const std::string& filename) {
         extension += my_tolower(c);
 
     if (extension == ".h5")
-        writer::h5(clean, filename);
-    else if (extension == ".asc")
-        writer::asc(clean, filename);
-    else if (extension == ".swc")
-        writer::swc(clean, filename);
+        writer::h5<GlialCell, GlialSection>(clean, filename);
     else
         throw UnknownFileType(_err.ERROR_WRONG_EXTENSION(filename));
 }

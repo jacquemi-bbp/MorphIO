@@ -42,8 +42,8 @@ template <typename Node, typename CRTP, typename Mut>
 class TTree
 {
   public:
-    using breadth_iterator = breadth_iterator_t<Node, CRTP>;
-    using depth_iterator = depth_iterator_t<Node, CRTP>;
+    using breadth_iterator = breadth_iterator_t<Node>;
+    using depth_iterator = depth_iterator_t<Node>;
 
     ~TTree();
 
@@ -115,7 +115,7 @@ class TTree
     /**
      * Return a vector with the section type of every section
      **/
-    const std::vector<typename Node::Type>& sectionTypes() const;
+    const std::vector<typename Node::Type> sectionTypes() const;
 
     /**
      * Return the graph connectivity of the TTree where each section
@@ -145,11 +145,6 @@ class TTree
      * Return the version
      **/
     const MorphologyVersion& version() const;
-
-    /**
-     * Return the cell family (neuron or glia)
-     **/
-    const CellFamily& cellFamily() const;
 
   protected:
     friend class mut::Morphology;
@@ -274,9 +269,11 @@ const std::vector<morphio::floatType>& TTree<Node, CRTP, Mut>::perimeters() cons
 }
 
 template <typename Node, typename CRTP, typename Mut>
-const std::vector<typename Node::Type>& TTree<Node, CRTP, Mut>::sectionTypes() const {
-    return get<Property::SectionType>();
-
+const std::vector<typename Node::Type> TTree<Node, CRTP, Mut>::sectionTypes() const {
+    std::vector<typename Node::Type> res;
+    for(auto type: get<Property::SectionType>())
+        res.push_back(static_cast<typename Node::Type>(type));
+    return res;
 }
 
 /*
@@ -297,22 +294,22 @@ const MorphologyVersion& TTree<Node, CRTP, Mut>::version() const {
 }
 
 template <typename Node, typename CRTP, typename Mut>
-depth_iterator_t<Node, CRTP> TTree<Node, CRTP, Mut>::depth_begin() const {
-    return depth_iterator(*static_cast<const CRTP*>(this));
+depth_iterator_t<Node> TTree<Node, CRTP, Mut>::depth_begin() const {
+    return depth_iterator(rootSections());
 }
 
 template <typename Node, typename CRTP, typename Mut>
-depth_iterator_t<Node, CRTP> TTree<Node, CRTP, Mut>::depth_end() const {
+depth_iterator_t<Node> TTree<Node, CRTP, Mut>::depth_end() const {
     return depth_iterator();
 }
 
 template <typename Node, typename CRTP, typename Mut>
-breadth_iterator_t<Node, CRTP> TTree<Node, CRTP, Mut>::breadth_begin() const {
-    return breadth_iterator(*static_cast<const CRTP*>(this));
+breadth_iterator_t<Node> TTree<Node, CRTP, Mut>::breadth_begin() const {
+    return breadth_iterator(rootSections());
 }
 
 template <typename Node, typename CRTP, typename Mut>
-breadth_iterator_t<Node, CRTP> TTree<Node, CRTP, Mut>::breadth_end() const {
+breadth_iterator_t<Node> TTree<Node, CRTP, Mut>::breadth_end() const {
     return breadth_iterator();
 }
 

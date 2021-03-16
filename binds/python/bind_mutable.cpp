@@ -122,9 +122,9 @@ void bind_mutable_module(py::module& m) {
                                "Return the graph connectivity of the morphology "
                                "where each section is seen as a node\nNote: -1 is the soma node")
 
-        .def_property_readonly("cell_family",
-                               &morphio::mut::Morphology::cellFamily,
-                               "Returns the cell family (neuron or glia)")
+        // .def_property_readonly("cell_family",
+        //                        &morphio::mut::Morphology::cellFamily,
+        //                        "Returns the cell family (neuron or glia)")
 
         .def_property_readonly("soma_type",
                                &morphio::mut::Morphology::somaType,
@@ -178,18 +178,6 @@ void bind_mutable_module(py::module& m) {
              "If recursive == true, all descendent will be appended as well",
              "mutable_section"_a,
              "recursive"_a = false);
-
-    py::class_<morphio::mut::GlialCell, morphio::mut::Morphology>(m, "GlialCell")
-        .def(py::init<>())
-        .def(py::init<const std::string&>())
-        .def(py::init([](py::object arg) {
-                 return std::unique_ptr<morphio::mut::GlialCell>(
-                     new morphio::mut::GlialCell(py::str(arg)));
-             }),
-             "filename"_a,
-             "Additional Ctor that accepts as filename any python "
-             "object that implements __repr__ or __str__");
-
 
     py::class_<morphio::mut::Mitochondria>(m, "Mitochondria")
         .def(py::init<>())

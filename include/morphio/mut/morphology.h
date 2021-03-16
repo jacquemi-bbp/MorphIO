@@ -26,6 +26,8 @@ bool _checkDuplicatePoint(const std::shared_ptr<Section>& parent,
 class Morphology
 {
   public:
+    using Family = CellFamily::NEURON;
+
     Morphology()
         : _counter(0)
         , _soma(std::make_shared<Soma>())
@@ -152,7 +154,7 @@ class Morphology
 
        If recursive == true, all descendent will be appended as well
     **/
-    std::shared_ptr<Section> appendRootSection(const morphio::Section<CellFamily::NEURON>&, bool recursive = false);
+    std::shared_ptr<Section> appendRootSection(const morphio::Node<CellFamily::NEURON>&, bool recursive = false);
 
     /**
        Append an existing Section as a root section

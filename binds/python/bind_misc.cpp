@@ -80,12 +80,6 @@ void bind_misc(py::module& m) {
         .export_values();
 
 
-    py::enum_<morphio::enums::CellFamily>(m, "CellFamily")
-        .value("NEURON", morphio::enums::CellFamily::NEURON)
-        .value("GLIA", morphio::enums::CellFamily::GLIA)
-        .export_values();
-
-
     py::enum_<morphio::enums::Warning>(m, "Warning")
         .value("undefined", morphio::enums::Warning::UNDEFINED)
         .value("mitochondria_write_not_supported",
@@ -203,9 +197,9 @@ void bind_misc(py::module& m) {
                                              "CellLevel",
                                              "Container class for information available at the "
                                              "cell level (cell type, file version, soma type)")
-        .def_readwrite("cell_family",
-                       &morphio::Property::CellLevel::_cellFamily,
-                       "Returns the cell family (neuron or glia)")
+        // .def_readwrite("cell_family",
+        //                &morphio::Property::CellLevel::_cellFamily,
+        //                "Returns the cell family (neuron or glia)")
         .def_readwrite("soma_type",
                        &morphio::Property::CellLevel::_somaType,
                        "Returns the soma type")

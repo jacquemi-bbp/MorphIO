@@ -14,12 +14,11 @@
 namespace morphio {
 
 using namespace enums;
-template <class Family>
 class EndoplasmicReticulum;
 class MitoSection;
 class Mitochondria;
 template <class Family>
-class Section;
+class Node;
 
 template <class TSection, class CRTP, class Mut>
 class TTree;
@@ -31,7 +30,6 @@ class SectionBase;
 class Soma;
 
 namespace Property {
-template <typename Family>
 struct Properties;
 }
 
@@ -74,5 +72,10 @@ struct CellFamily {
     };
 };
 
+using NeuronalSection = Node<CellFamily::NEURON>;
+using GlialSection = Node<CellFamily::GLIA>;
+
+// legacy name
+using Section = NeuronalSection;
 
 }  // namespace morphio
