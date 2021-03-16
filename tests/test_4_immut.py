@@ -6,8 +6,8 @@ from nose.tools import assert_dict_equal, assert_equal, ok_, assert_raises
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from pathlib import Path
 
-from morphio import IterType, Morphology, CellFamily, RawDataError , GlialCell
-
+from morphio import IterType, Morphology, RawDataError
+# CellFamily, GlialCell
 _path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
